@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Summarizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js" integrity="sha512-Z8CqofpIcnJN80feS2uccz+pXWgZzeKxDsDNMD/dJ6997/LSRY+W4NmEt9acwR+Gt9OHN0kkI1CTianCwoqcjQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <header>
+        <h1>Artificial Intelligence Project</h1>
+        <h3>Email Summarizer</h3>
+    </header>
+    <div class="container">
+        <form action="/" method="post" enctype="multipart/form-data" class="formOrPdf" id="email_form">
+            <div class="content">
+                <div class="text-area">
+                    <label for="email_text">Enter email text or upload PDF:</label>
+                    <textarea id="email_text" name="email_text" rows="20" cols="50"></textarea>
+                    <label for="pdf_file">Upload PDF file:</label>
+                    <input type="file" id="pdf_file" name="pdf_file" accept=".pdf">
+                    <button type="button" onclick="uploadFile()">Upload</button><br><br>
+                    <button type="button" class="button" onclick="submitForm()">Summarize</button>          
+                </div>
+            </div>
+        </form>
+        <div class="summary">
+            <h2>Summary:</h2>
+            <p id="summary">{{ summary }}</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Developed by:</p>
+        <p>Mirali Chhag - 92210133008 , Viral Kamani- 92210133002</p>
+       <b> <p>Guided by: Prof. Nishit Kotak</p> </b>
+    </footer>
+   
+    <script>
+        function uploadFile() {
+            var fileInput = document.getElementById('pdf_file');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                // Load the PDF file
+                if (typeof pdfjsLib !== 'undefined') {
+                    pdfjsLib.getDocument({data: e.target.result}).promise.then(function(pdf) {
+                        var numPages = pdf.numPages;
+                        var text = '';
+                        for (var i = 1; i <= numPages; i++) {
+                            pdf.getPage(i).then(function(page) {
+                                page.getTextContent().then(function(content) {
+                                    // Extract text from the page and append it to the text variable
+                                    content.items.forEach(function(item) {
+                                        text += item.str + '\n';
+                                    });
+                                    // Set the extracted text as the value of the textarea
+                                    var textArea = document.getElementById('email_text');
+                                    textArea.value = text;
+                                });
+                            });
+                        }
+                    });
+                } else {
+                    console.error('PDF.js library is not loaded.');
+                }
+            }
+
+            // Read the uploaded file as binary data
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Function to submit form data without reloading the page
+        function submitForm() {
+            var form = document.getElementById('email_form');
+            var formData = new FormData(form);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('summary').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
