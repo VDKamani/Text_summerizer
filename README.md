@@ -1,4 +1,4 @@
-# Text-Summarizer-
+# Text-Summarizer
 Text Summarization using T5 Algorithm 
 
 # Text Summarizer Web Page
